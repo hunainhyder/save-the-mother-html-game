@@ -48,6 +48,16 @@
 </head>
 <body>
 
+    <!-- Loading Screen -->
+    <div id="loader" style="
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: white; display: flex; justify-content: center; align-items: center;
+    font-size: 24px; font-weight: bold;
+    ">
+    Loading...
+    </div>
+
     <div class="container">
         <h1>Save the Mother and Daughter</h1>
         <p>Click on highlighted parts of the image to improve their condition.</p>
@@ -162,6 +172,35 @@
         }
 
         initGame();
+
+        const imageSources = [
+            "stage1.png", "stage2.png", "stage3.png", "stage4.png", 
+            "stage5.png", "stage6.png", "stage7.png"
+        ];
+
+        function preloadImages(images, callback) {
+            let loaded = 0;
+            images.forEach(src => {
+                let img = new Image();
+                img.src = src;
+                img.onload = () => {
+                    loaded++;
+                    if (loaded === images.length) callback();
+                };
+            });
+        }
+
+        // Show loader until images are loaded
+        window.onload = function () {
+            preloadImages(imageSources, function () {
+                document.getElementById("loader").style.display = "none"; // Hide loader
+                document.querySelector(".container").style.display = "block"; // Show game
+            });
+        };
+
+        // Hide the game container initially
+        document.querySelector(".container").style.display = "none";
+
     </script>
 
 </body>
