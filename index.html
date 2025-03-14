@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save the Family</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); position: relative; }
+        .family-container { position: relative; display: inline-block; }
+        .family-img { width: 100%; transition: filter 0.3s; }
+
+        /* Clickable Areas */
+        .clickable { position: absolute; width: 50px; height: 50px; cursor: pointer; opacity: 0.3; transition: opacity 0.3s, background 0.3s, transform 0.1s; border-radius: 50%; }
+        .clickable.active { opacity: 1; border: 2px solid red; background: rgba(255, 0, 0, 0.4); }
+        .clickable.done { border: 2px solid green; background: rgba(0, 255, 0, 0.4); }
+
+        /* Progress Bars */
+        .progress-container { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 80%; display: none; }
+        .progress-bar { height: 20px; width: 100%; background: #ddd; border-radius: 10px; overflow: hidden; }
+        .progress { height: 100%; width: 0%; background: green; transition: width 0.5s ease-in-out; text-align: center; color: white; font-weight: bold; }
+
+        /* Congratulations Message */
+        .congrats { display: none; font-size: 24px; font-weight: bold; color: green; margin-top: 20px; animation: pop 0.5s ease-in-out infinite alternate; }
+        .credits { display: none; font-size: 14px; font-weight: bold; color: green; margin-top: 20px; animation: pop 0.5s ease-in-out infinite alternate; }
+
+        /* Particle Animation */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: gold;
+            border-radius: 50%;
+            opacity: 1;
+            animation: particle-fall 0.6s ease-out forwards;
+        }
+
+        @keyframes particle-fall {
+            0% { transform: translateY(0px) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(0.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Save the Mother and Daughter</h1>
+        <p>Click on highlighted parts of the image to improve their condition.</p>
+        <p>Game made by Hunain Hyder(greatest software engineer of this era).</p>
+
+        <!-- Family Image -->
+        <div class="family-container">
+            <div id="progress-bars" class="progress-container">
+                <div class="progress-bar">
+                    <div id="progress" class="progress">0%</div>
+                </div>
+            </div>
+            <img src="stage1.png" id="familyImg" class="family-img">
+
+            <!-- Clickable Areas -->
+            <div id="house" class="clickable" style="top: 45%; left: 50px;" onclick="collectResource('house')"></div>
+            <div id="interior" class="clickable" style="top: 40%; left: 60%;" onclick="collectResource('interior')"></div>
+            <div id="roof" class="clickable" style="top: 25%; right: 10%;" onclick="collectResource('roof')"></div>
+            <div id="food" class="clickable" style="bottom: 5%; right: 5%;" onclick="collectResource('food')"></div>
+            <div id="water" class="clickable" style="bottom: 5%; left: 4%;" onclick="collectResource('water')"></div>
+            <div id="baby" class="clickable" style="bottom: 20%; left: 27%;" onclick="collectResource('baby')"></div>
+            <div id="dress" class="clickable" style="bottom: 20%; right: 20%;" onclick="collectResource('dress')"></div>
+        </div>
+
+        <!-- Congratulations Message -->
+        <div id="congrats" class="congrats">🎉 Congratulations! You've saved the family! 🎉</div>
+        <div id="credits" class="credits">If you enjoyed then give Hunain 100 Rs. (He's poor too, he can build his home like this game) 😔😔😔</div>
+    </div>
+
+    <!-- Sound Effects -->
+    <audio id="click-sound" src="click.wav"></audio>
+    <audio id="complete-sound" src="complete.mp3"></audio>
+
+    <script>
+        const steps = ["house", "interior", "roof", "food", "water", "baby", "dress"];
+        const resources = { house: 0, interior: 0, roof: 0, food: 0, water: 0, baby: 0, dress: 0 };
+        let currentStep = 0;
+
+        function collectResource(type) {
+            if (resources[type] < 100) {
+                resources[type] += 20;
+                updateProgress(type);
+
+                // Play sound effect
+                document.getElementById("click-sound").play();
+
+                // Add bounce effect
+                let el = document.getElementById(type);
+                el.style.transform = "scale(1.1)";
+                setTimeout(() => { el.style.transform = "scale(1)"; }, 100);
+
+                if (resources[type] === 100) {
+                    document.getElementById(type).classList.add("done");
+                    document.getElementById(type).classList.remove("active");
+                    unlockNextStep();
+                }
+                updateImage();
+            }
+        }
+
+        function updateProgress(type) {
+            const progressBar = document.getElementById("progress");
+            document.getElementById("progress-bars").style.display = "block";
+
+            progressBar.textContent = resources[type] + "%";
+            progressBar.style.width = resources[type] + "%";
+
+            createParticles(document.getElementById(type));
+
+            if (resources[type] === 100) {
+                setTimeout(() => { document.getElementById("progress-bars").style.display = "none"; }, 500);
+            }
+        }
+
+        function unlockNextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                let next = steps[currentStep];
+
+                document.getElementById(next).classList.add("active");
+
+                // Play complete sound
+                document.getElementById("complete-sound").play();
+            } else {
+                document.getElementById("congrats").style.display = "block";
+                document.getElementById("credits").style.display = "block";
+            }
+        }
+
+        function updateImage() {
+            let totalCondition = (Object.values(resources).reduce((a, b) => a + b, 0)) / 7;
+            let img = document.getElementById("familyImg");
+
+            img.src = `stage${Math.min(7, Math.ceil(totalCondition / 15))}.png`;
+        }
+
+        function createParticles(element) {
+            for (let i = 0; i < 5; i++) {
+                let particle = document.createElement("div");
+                particle.classList.add("particle");
+                let rect = element.getBoundingClientRect();
+                particle.style.left = rect.left + 25 + "px";
+                particle.style.top = rect.top + "px";
+                document.body.appendChild(particle);
+
+                setTimeout(() => { particle.remove(); }, 600);
+            }
+        }
+
+        function initGame() {
+            document.getElementById(steps[currentStep]).classList.add("active");
+        }
+
+        initGame();
+    </script>
+
+</body>
+</html>
